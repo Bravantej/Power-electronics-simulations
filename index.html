@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RectifierLab</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8EDF1;--panel:#F6F8FA;--ink:#14202B;--mute:#5B6B79;--grid:#CBD5DD;--src:#475569;--vo:#C2410C;--io:#1D4ED8;--acc:#0F766E;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1419;--panel:#151D24;--ink:#E3EAF0;--mute:#8A9AA8;--grid:#26323C;--src:#94A3B8;--vo:#FB923C;--io:#60A5FA;--acc:#2DD4BF}}
+:root[data-theme="dark"]{--bg:#0E1419;--panel:#151D24;--ink:#E3EAF0;--mute:#8A9AA8;--grid:#26323C;--src:#94A3B8;--vo:#FB923C;--io:#60A5FA;--acc:#2DD4BF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,sans-serif}
+h1{font:800 clamp(28px,5vw,44px)/1 "Bricolage Grotesque",Figtree,sans-serif;margin:0;letter-spacing:-.02em}
+header{padding:24px 20px 8px;max-width:1280px;margin:auto}
+header p{margin:6px 0 0;color:var(--mute);max-width:60ch}
+.app{display:grid;grid-template-columns:300px 1fr;gap:20px;padding:16px 20px 28px;max-width:1280px;margin:auto}
+@media(max-width:820px){.app{grid-template-columns:1fr}}
+aside{background:var(--panel);border-radius:14px;padding:18px;align-self:start;display:grid;gap:16px}
+aside h2{font:600 15px "Bricolage Grotesque",Figtree,sans-serif;margin:0 0 6px}
+.seg{display:flex;border:1.5px solid var(--grid);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;background:none;color:var(--ink);padding:8px 4px;font:inherit;cursor:pointer}
+.seg button+button{border-left:1.5px solid var(--grid)}
+.seg button[aria-pressed=true]{background:var(--acc);color:#fff}
+.seg button:focus-visible,input:focus-visible,.chk:focus-within{outline:2px solid var(--acc);outline-offset:2px}
+.row{display:grid;gap:2px}.row.off{opacity:.35;pointer-events:none}
+.row label{display:flex;justify-content:space-between}.row output{color:var(--mute);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+.pre{display:flex;flex-wrap:wrap;gap:6px}.pre button{border:1.5px solid var(--grid);border-radius:10px;background:none;color:var(--ink);padding:6px 10px;font:inherit;cursor:pointer}.pre button:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.dv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.dv label{display:grid;gap:2px;font-size:13px;color:var(--mute)}
+select{font:inherit;padding:6px;border-radius:8px;border:1.5px solid var(--grid);background:var(--bg);color:var(--ink)}
+.hint{margin:0 0 12px;color:var(--mute);font-size:13px}
+#ckt{width:100%;height:auto;max-height:330px;display:block}
+#ckt .wr{stroke:var(--mute);stroke-width:2;fill:none}
+#ckt .hot{stroke:var(--acc);stroke-width:4;stroke-dasharray:9 7;fill:none;opacity:0}
+#ckt .hot.on{opacity:1;animation:fl .5s linear infinite}
+#ckt .hot.on.rev{animation-direction:reverse}
+@keyframes fl{to{stroke-dashoffset:-16}}
+@media(prefers-reduced-motion:reduce){#ckt .hot.on{animation:none}}
+#ckt .sym{stroke:var(--ink);stroke-width:2;fill:none}
+#ckt .mk{fill:var(--panel)}
+#ckt .dot{fill:var(--mute)}
+#ckt .tx{fill:var(--ink);font:600 15px Figtree,sans-serif}
+#ckt .sm{fill:var(--mute);font:13px Figtree,sans-serif}
+#ckt .dev{cursor:pointer;outline:none}
+#ckt .hit{fill:transparent}
+#ckt .dev .s{stroke:var(--ink);stroke-width:2;fill:none}
+#ckt .dev.on .s{stroke:var(--acc)}
+#ckt .dev.on .tri{fill:var(--acc)}
+#ckt .dev:hover .hit,#ckt .dev:focus-visible .hit{stroke:var(--acc);stroke-width:1.5;stroke-dasharray:3 3}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:8px;max-width:1280px;margin:8px auto 0;padding:0 20px}
+.tabs button,.try{border:1.5px solid var(--grid);border-radius:10px;background:none;color:var(--ink);padding:8px 18px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tabs button:focus-visible,.try:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.try{padding:4px 12px;font-size:13px;margin:4px 6px 4px 0}
+.th{max-width:860px;margin:auto;padding:16px 20px 40px}
+.th details{background:var(--panel);border-radius:14px;padding:4px 18px;margin:0 0 12px}
+.th summary{font:600 18px "Bricolage Grotesque",Figtree,sans-serif;padding:12px 0;cursor:pointer}
+.th p{margin:8px 0;max-width:70ch}
+.eq{font:17px/1.6 Cambria,"Times New Roman",serif;padding:6px 12px;border-left:3px solid var(--acc);margin:8px 0;overflow-x:auto;white-space:nowrap}
+.th table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
+.th td,.th th{border-bottom:1px solid var(--grid);padding:6px 10px;text-align:left;vertical-align:top}
+main{min-width:0}
+#status{min-height:24px;margin:0 0 8px;font-weight:600;font-variant-numeric:tabular-nums}
+#status span{color:var(--mute);font-weight:400}
+.scope{background:var(--panel);border-radius:14px;padding:8px}
+canvas{width:100%;height:min(66vh,560px);display:block}
+dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin:14px 0 0;gap:12px}
+dl div{border-left:3px solid var(--grid);padding-left:10px}
+dt{color:var(--mute);font-size:13px}dd{margin:0;font:600 20px "Bricolage Grotesque",Figtree,sans-serif;font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){}
+</style></head><body>
+<header><h1>RectifierLab</h1><p>Single- and three-phase bridge rectifiers with diodes or thyristors. Change the load, firing angle or freewheeling diode and watch the waveforms and conducting devices update.</p></header>
+<nav class="tabs"><button id="t-lab" aria-pressed="true">Lab</button><button id="t-th" aria-pressed="false">Theory</button></nav>
+<div class="app" id="lab">
+<aside id="ctl">
+<div><h2>Supply</h2><div class="seg" data-k="topo"><button data-v="1p">Single-phase</button><button data-v="3p">Three-phase</button></div></div>
+<div><h2>Devices</h2><div class="pre"><button data-p="D">All diodes</button><button data-p="T">Fully controlled</button><button data-p="H">Half-controlled</button></div><div id="devs" class="dv"></div></div>
+<div><h2>Load</h2><div class="seg" data-k="load"><button data-v="R">R</button><button data-v="RL">RL</button><button data-v="RLE">RLE</button></div></div>
+<div class="row" id="r-alpha"><label for="alpha">Firing angle α <output></output></label><input id="alpha" type="range" min="0" max="150" step="1" value="30"></div>
+<div class="row"><label for="R">Resistance R <output></output></label><input id="R" type="range" min="1" max="50" step="1" value="10"></div>
+<div class="row" id="r-L"><label for="L">Inductance L <output></output></label><input id="L" type="range" min="1" max="500" step="1" value="50"></div>
+<div class="row" id="r-E"><label for="E">Back-EMF E <output></output></label><input id="E" type="range" min="0" max="250" step="5" value="60"></div>
+<label class="chk"><input type="checkbox" id="fw"> Freewheeling diode</label>
+</aside>
+<main>
+<p id="status"></p>
+<div class="scope" style="margin-bottom:8px"><svg id="ckt" role="group" aria-label="Rectifier circuit diagram"></svg></div><p class="hint">Click a device in the circuit to cycle diode, thyristor and open. Click the diode across the load to add or remove a freewheeling diode. The highlighted path is the current flowing at the cursor position.</p><div class="scope"><canvas id="cv" role="img" aria-label="Source, output voltage and load current waveforms"></canvas></div>
+<dl id="m"></dl>
+</main></div>
+<section class="th" id="theory" hidden>
+<details open><summary>Conventions and quick reference</summary>
+<p>All devices and sources are ideal: zero voltage drop, instant switching, no source inductance (so no commutation overlap). The supply is v<sub>s</sub> = V<sub>m</sub> sin θ with θ = ωt, V<sub>m</sub> = 325 V (230 V rms), 50 Hz. In the three-phase bridge V<sub>m</sub> is the phase peak and V<sub>ml</sub> = √3 V<sub>m</sub> ≈ 563 V is the line-to-line peak. The firing angle α is measured from the point where the device would conduct as a diode (natural commutation point). Averages are taken over one period of the output voltage.</p>
+<table><tr><th>Circuit</th><th>Condition</th><th>Average output V<sub>avg</sub></th></tr>
+<tr><td>1φ, diodes</td><td>E = 0</td><td>2V<sub>m</sub>/π</td></tr>
+<tr><td>1φ fully controlled</td><td>continuous current</td><td>(2V<sub>m</sub>/π) cos α</td></tr>
+<tr><td>1φ fully controlled</td><td>R load, or with freewheeling diode</td><td>(V<sub>m</sub>/π)(1 + cos α)</td></tr>
+<tr><td>1φ half-controlled</td><td>E = 0, any L</td><td>(V<sub>m</sub>/π)(1 + cos α)</td></tr>
+<tr><td>3φ, diodes</td><td>E = 0</td><td>3V<sub>ml</sub>/π = 3√3V<sub>m</sub>/π ≈ 1.654V<sub>m</sub></td></tr>
+<tr><td>3φ fully controlled</td><td>continuous current</td><td>(3V<sub>ml</sub>/π) cos α</td></tr>
+<tr><td>3φ fully controlled</td><td>R load, α &gt; 60°</td><td>(3V<sub>ml</sub>/π)[1 + cos(α + 60°)]</td></tr>
+<tr><td>3φ half-controlled</td><td>E = 0</td><td>(3V<sub>ml</sub>/2π)(1 + cos α)</td></tr></table>
+<p>With a battery or motor load, the load current is I<sub>avg</sub> = (V<sub>avg</sub> − E)/R whenever conduction is continuous. The lab shows "Theory V<sub>avg</sub>" next to the simulated value for the cases in this table.</p></details>
+
+<details><summary>1. Single-phase bridge with diodes</summary>
+<p>D1 and D2 conduct while v<sub>s</sub> &gt; 0 and D3 and D4 while v<sub>s</sub> &lt; 0, so the output is the rectified source, v<sub>o</sub> = |v<sub>s</sub>|.</p>
+<div class="eq">V<sub>avg</sub> = (1/π) ∫<sub>0</sub><sup>π</sup> V<sub>m</sub> sin θ dθ = (V<sub>m</sub>/π)[−cos θ]<sub>0</sub><sup>π</sup> = 2V<sub>m</sub>/π ≈ 0.637 V<sub>m</sub> ≈ 207 V</div>
+<div class="eq">V<sub>rms</sub> = √[(1/π) ∫<sub>0</sub><sup>π</sup> V<sub>m</sub>² sin²θ dθ] = V<sub>m</sub>/√2</div>
+<p>The ripple frequency is 2f = 100 Hz. With a very large L the load current is nearly constant at I<sub>o</sub>, and the source current is a ±I<sub>o</sub> square wave.</p>
+<button class="try" data-cfg='{"topo":"1p","dev":"D","load":"R"}'>Try in lab</button></details>
+
+<details><summary>2. Single-phase fully controlled bridge, continuous current</summary>
+<p>T1 and T2 fire at α and T3 and T4 at π + α. With a large L, T1 and T2 keep conducting after v<sub>s</sub> goes negative, until T3 and T4 fire, so v<sub>o</sub> = v<sub>s</sub> for α &lt; θ &lt; π + α.</p>
+<div class="eq">V<sub>avg</sub> = (1/π) ∫<sub>α</sub><sup>π+α</sup> V<sub>m</sub> sin θ dθ = (V<sub>m</sub>/π)[cos α − cos(π + α)] = (2V<sub>m</sub>/π) cos α</div>
+<p>V<sub>rms</sub> = V<sub>m</sub>/√2 for any α. For α &gt; 90° the average is negative: the bridge would be inverting, which needs a source E that pushes current against the bridge. With the battery polarity used here the current cannot continue, so the lab shows discontinuous conduction instead.</p>
+<p><b>Power factor.</b> The source current is ±I<sub>o</sub>, so I<sub>s</sub> = I<sub>o</sub> and its fundamental is 4I<sub>o</sub>/π peak, or 2√2 I<sub>o</sub>/π rms, lagging by α. Displacement factor = cos α, distortion factor = 2√2/π ≈ 0.9, so PF = (2√2/π) cos α.</p>
+<button class="try" data-cfg='{"topo":"1p","dev":"T","load":"RL","alpha":60,"R":10,"L":500}'>Try α = 60°, large L</button></details>
+
+<details><summary>3. Single-phase fully controlled bridge, R load</summary>
+<p>The current is zero whenever v<sub>s</sub> is zero, so each pair conducts only from α to π.</p>
+<div class="eq">V<sub>avg</sub> = (1/π) ∫<sub>α</sub><sup>π</sup> V<sub>m</sub> sin θ dθ = (V<sub>m</sub>/π)(1 + cos α)</div>
+<div class="eq">V<sub>rms</sub>² = (1/π) ∫<sub>α</sub><sup>π</sup> V<sub>m</sub>² sin²θ dθ = (V<sub>m</sub>²/2π)[(π − α) + ½ sin 2α]</div>
+<div class="eq">V<sub>rms</sub> = (V<sub>m</sub>/√2) √[1 − α/π + sin 2α/(2π)]</div>
+<p>Check: α = 0 gives V<sub>m</sub>/√2, and α = π gives 0. Control range is 0 ≤ α ≤ π.</p>
+<button class="try" data-cfg='{"topo":"1p","dev":"T","load":"R","alpha":60}'>Try in lab</button></details>
+
+<details><summary>4. Freewheeling diode and the half-controlled bridge</summary>
+<p>Without help, an inductive load forces the bridge to carry negative v<sub>o</sub> between π and π + α. A freewheeling diode D<sub>f</sub> across the load turns on as soon as v<sub>o</sub> would go negative, so v<sub>o</sub> = 0 in that interval and the load current circulates through D<sub>f</sub>.</p>
+<div class="eq">v<sub>o</sub> = v<sub>s</sub> for α &lt; θ &lt; π, and v<sub>o</sub> = 0 for π &lt; θ &lt; π + α</div>
+<div class="eq">V<sub>avg</sub> = (1/π) ∫<sub>α</sub><sup>π</sup> V<sub>m</sub> sin θ dθ = (V<sub>m</sub>/π)(1 + cos α)</div>
+<p>This is the same as for an R load, and it holds for any L when the current stays continuous. The source current is only present for π − α of each half cycle, so I<sub>s,rms</sub> = I<sub>o</sub> √((π − α)/π).</p>
+<p>In a <b>half-controlled bridge</b> (two thyristors in the upper row, two diodes in the lower row, or the reverse), freewheeling happens through one thyristor and one diode of the same leg, so no separate D<sub>f</sub> is needed. V<sub>avg</sub> is the same expression, and since v<sub>o</sub> never goes negative the bridge cannot invert.</p>
+<button class="try" data-cfg='{"topo":"1p","dev":"T","load":"RL","alpha":60,"L":500,"fw":true}'>Full bridge + D<sub>f</sub></button><button class="try" data-cfg='{"topo":"1p","dev":"H","load":"RL","alpha":60,"L":500}'>Half-controlled</button></details>
+
+<details><summary>5. RLE load (battery charger or DC motor armature)</summary>
+<p>While a pair conducts, with v<sub>o</sub> = V<sub>m</sub> sin θ:</p>
+<div class="eq">L di/dt + R i + E = V<sub>m</sub> sin ωt  →  ωL di/dθ + R i = V<sub>m</sub> sin θ − E</div>
+<p>Let Z = √(R² + ω²L²) and φ = tan⁻¹(ωL/R). The sinusoidal part gives (V<sub>m</sub>/Z) sin(θ − φ), the constant part gives −E/R, and the homogeneous part is A e<sup>−Rθ/ωL</sup>:</p>
+<div class="eq">i(θ) = (V<sub>m</sub>/Z) sin(θ − φ) − E/R + A e<sup>−(R/ωL)θ</sup></div>
+<p>Conduction can only start once v<sub>s</sub> exceeds E, so the start angle is θ<sub>s</sub> = max(α, sin⁻¹(E/V<sub>m</sub>)). The condition i(θ<sub>s</sub>) = 0 fixes A:</p>
+<div class="eq">A = [E/R − (V<sub>m</sub>/Z) sin(θ<sub>s</sub> − φ)] e<sup>(R/ωL)θ<sub>s</sub></sup></div>
+<p>The extinction angle β is the solution of i(β) = 0 (transcendental, so it is found numerically). Conduction is continuous if β ≥ π + θ<sub>s</sub>. When the current is zero, the load terminals sit at E, so over one π-period:</p>
+<div class="eq">V<sub>avg</sub> = (1/π)[V<sub>m</sub>(cos θ<sub>s</sub> − cos β) + E(π + θ<sub>s</sub> − β)],  I<sub>avg</sub> = (V<sub>avg</sub> − E)/R</div>
+<p>With L = 0: β = π − θ<sub>s</sub> and I<sub>avg</sub> = [2V<sub>m</sub> cos θ<sub>s</sub> − E(π − 2θ<sub>s</sub>)]/(πR). In the lab, raise E or α and watch the conduction mode switch to "Discontinuous" and the current drop to zero between pulses.</p>
+<button class="try" data-cfg='{"topo":"1p","dev":"D","load":"RLE","R":10,"L":50,"E":150}'>Diode charger, E = 150 V</button><button class="try" data-cfg='{"topo":"1p","dev":"T","load":"RLE","alpha":40,"R":10,"L":50,"E":100}'>Thyristor, α = 40°, E = 100 V</button></details>
+
+<details><summary>6. Three-phase bridge (six-pulse)</summary>
+<p>With v<sub>a</sub> = V<sub>m</sub> sin θ, v<sub>b</sub> = V<sub>m</sub> sin(θ − 120°) and v<sub>c</sub> = V<sub>m</sub> sin(θ − 240°), the line voltage is, for example, v<sub>ab</sub> = V<sub>ml</sub> sin(θ + 30°). The upper device connected to the highest phase conducts and the lower device connected to the lowest phase conducts. Each pair conducts for 60°, and v<sub>o</sub> follows the line-voltage envelope.</p>
+<div class="eq">V<sub>avg</sub> = (3/π) ∫<sub>π/3</sub><sup>2π/3</sup> V<sub>ml</sub> sin θ dθ = (3V<sub>ml</sub>/π)[cos 60° − cos 120°] = 3V<sub>ml</sub>/π = 3√3V<sub>m</sub>/π ≈ 538 V</div>
+<div class="eq">V<sub>rms</sub>² = (3V<sub>ml</sub>²/π)[θ/2 − sin 2θ/4]<sub>π/3</sub><sup>2π/3</sup> = V<sub>ml</sub>²(½ + 3√3/4π)  →  V<sub>rms</sub> ≈ 0.956 V<sub>ml</sub></div>
+<p>The ripple frequency is 6f = 300 Hz. <b>Fully controlled:</b> every conduction window shifts by α, and for continuous current</p>
+<div class="eq">V<sub>avg</sub> = (3V<sub>ml</sub>/π) ∫<sub>π/3+α</sub><sup>2π/3+α</sup> sin θ dθ = (3V<sub>ml</sub>/π) cos α</div>
+<p>With an R load the current is continuous for α ≤ 60°. For 60° &lt; α ≤ 120° the voltage reaches zero at θ = π, so V<sub>avg</sub> = (3V<sub>ml</sub>/π)[1 + cos(α + 60°)]. A <b>half-controlled</b> bridge gives V<sub>avg</sub> = (3V<sub>ml</sub>/2π)(1 + cos α).</p>
+<p><b>Power factor.</b> With a constant load current the source current is ±I<sub>o</sub> in 120° blocks. I<sub>s</sub> = I<sub>o</sub> √(2/3), and the fundamental is (√6/π) I<sub>o</sub> rms. The distortion factor is 3/π ≈ 0.955 and PF = (3/π) cos α.</p>
+<button class="try" data-cfg='{"topo":"3p","dev":"D","load":"RL","L":200}'>3φ diode bridge</button><button class="try" data-cfg='{"topo":"3p","dev":"T","load":"RL","alpha":30,"L":200}'>3φ α = 30°</button><button class="try" data-cfg='{"topo":"3p","dev":"T","load":"R","alpha":90}'>3φ R load, α = 90°</button><button class="try" data-cfg='{"topo":"3p","dev":"H","load":"RL","alpha":60,"L":200}'>3φ half-controlled</button></details>
+</section>
+<script>
+const S={topo:'1p',dev:'thy',load:'RLE',alpha:30,R:10,L:50,E:60,fw:false},$=id=>document.getElementById(id);
+const N=2400,Vm=325,W=2*Math.PI*50,PI=Math.PI;
+let D=null;
+// [number, upper?, source node, natural-commutation angle]
+const DEF={'1p':[[1,1,0,0],[2,0,1,0],[3,1,1,180],[4,0,0,180]],'3p':[[1,1,0,30],[2,0,2,210],[3,1,1,150],[4,0,0,330],[5,1,2,270],[6,0,1,90]]};
+S.types={};
+const ty=n=>S.types[n]||'T';
+function sim(){
+  const devs=DEF[S.topo].map(([n,u,k,nat])=>({n,u,k,nat,ty:ty(n),c:false})),
+    dt=.02/N,a=S.alpha*PI/180,R=S.R,L=S.load==='R'?0:S.L/1e3,E=S.load==='RLE'?S.E:0,wid=S.topo==='1p'?PI:2*PI/3,
+    pre=d=>(d.ty==='D'?'D':'T')+d.n;
+  let i=0,zero=0;const o={cd:[],vs:[],vb:[],vc:[],vo:[],io:[],lab:[]};
+  for(let c=0;c<4;c++)for(let k=0;k<N;k++){
+    const th=(W*(c*N+k)*dt)%(2*PI),va=Vm*Math.sin(th),vb=Vm*Math.sin(th-2*PI/3),vc=Vm*Math.sin(th-4*PI/3),
+      v=S.topo==='1p'?[va,0]:[va,vb,vc];
+    let Pn=-1e9,Nn=1e9,pu=null,pl=null;
+    for(const d of devs){
+      if(d.ty==='X')continue;
+      let ok=d.ty==='D'||d.c;
+      if(!ok){const g=(((th-(d.nat*PI/180+a))%(2*PI))+2*PI)%(2*PI);ok=g<wid}
+      if(!ok)continue;
+      if(d.u){if(v[d.k]>Pn){Pn=v[d.k];pu=d}}else if(v[d.k]<Nn){Nn=v[d.k];pl=d}
+    }
+    const have=pu&&pl,vbr=have?Pn-Nn:-1e9;let vo=E,on=false,fwm=false;
+    if(i>1e-9){if(S.fw&&vbr<0){vo=0;fwm=true}else if(have){vo=vbr;on=true}else i=0}
+    else if(have&&vbr>E){vo=vbr;on=true}
+    if(on||fwm){
+      let n2=L>0?(i+dt/L*(vo-E))/(1+dt*R/L):(vo-E)/R;
+      if(n2<=0){n2=0;on=false;fwm=false;vo=E}
+      i=n2;
+    }else i=0;
+    devs.forEach(d=>d.c=on&&(d===pu||d===pl));
+    if(c===3){
+      o.vs.push(va);o.vb.push(vb);o.vc.push(vc);o.vo.push(vo);o.io.push(i);
+      if(i<=1e-9)zero++;
+      o.cd.push(on?[pu.n,pl.n,pu.k,pl.k]:fwm?'fw':null);o.lab.push(on?pre(pu)+' · '+pre(pl)+' conducting':fwm?'Freewheeling diode conducting':'No device conducting');
+    }
+  }
+  const avg=x=>x.reduce((s,y)=>s+y,0)/x.length,rms=x=>Math.sqrt(avg(x.map(y=>y*y)));
+  o.m={Vavg:avg(o.vo),Iavg:avg(o.io),Vrms:rms(o.vo),Irms:rms(o.io),P:avg(o.vo.map((x,k)=>x*o.io[k])),disc:zero/N>.01};
+  D=o;buildCkt();
+  const th=theory();
+  $('m').innerHTML=[['Average Vo',o.m.Vavg.toFixed(1)+' V'],['Average Io',o.m.Iavg.toFixed(2)+' A'],['RMS Vo',o.m.Vrms.toFixed(1)+' V'],['RMS Io',o.m.Irms.toFixed(2)+' A'],['Load power',o.m.P.toFixed(0)+' W'],['Conduction',o.m.disc?'Discontinuous':'Continuous'],['Theory Vavg',th==null?'n/a':th.toFixed(1)+' V'],['Sim − theory',th==null?'—':(o.m.Vavg-th).toFixed(1)+' V']].map(x=>`<div><dt>${x[0]}</dt><dd>${x[1]}</dd></div>`).join('');
+}
+function devUI(){
+  const box=$('devs');
+  box.innerHTML=DEF[S.topo].slice().sort((p,q)=>p[0]-q[0]).map(([n,u])=>`<label>Device ${n} (${u?'upper':'lower'})<select data-n="${n}">${[['D','Diode'],['T','Thyristor'],['X','Open']].map(([v,t])=>`<option value="${v}"${ty(n)===v?' selected':''}>${t}</option>`).join('')}</select></label>`).join('');
+  box.querySelectorAll('select').forEach(s=>s.onchange=()=>{S.types[+s.dataset.n]=s.value;ui();sim()});
+}
+document.querySelectorAll('.pre button').forEach(b=>b.onclick=()=>{
+  for(let n=1;n<=6;n++)S.types[n]=b.dataset.p==='H'?(n%2?'T':'D'):b.dataset.p;
+  devUI();ui();sim();
+});
+const ckt=$('ckt');let lastKey=null,fwEl=null;
+const hot=(id,d)=>`<path data-w="${id}" class="hot" d="${d}"/>`,wire=d=>`<path class="wr" d="${d}"/>`;
+function body(t,x,cy){
+  if(t==='X')return `<path class="s" d="M${x} ${cy-18} V${cy-12} M${x} ${cy+18} V${cy+12} M${x} ${cy+12} L${x+9} ${cy-9}" ${''}/>`;
+  return `<path class="s" d="M${x} ${cy-18} V${cy-8} M${x} ${cy+18} V${cy+8} M${x-9} ${cy-8} H${x+9}${t==='T'?` M${x+4} ${cy+2} L${x+14} ${cy+10}`:''}"/><polygon class="s tri" points="${x-9},${cy+8} ${x+9},${cy+8} ${x},${cy-8}"/>`;
+}
+const NM={D:'diode',T:'thyristor',X:'open'};
+function dev(attr,label,aria,t,x,cy){
+  return `<g class="dev" ${attr} tabindex="0" role="button" aria-label="${aria}"><rect class="hit" x="${x-26}" y="${cy-22}" width="52" height="44"/><rect class="mk" x="${x-12}" y="${cy-18}" width="24" height="36"/>${body(t,x,cy)}<text class="sm" x="${x-16}" y="${cy+4}" text-anchor="end">${label}</text></g>`;
+}
+function buildCkt(){
+  const f=document.activeElement&&document.activeElement.closest?document.activeElement.closest('#ckt .dev'):null,fn=f&&(f.dataset.n||'fw');
+  const one=S.topo==='1p',X=one?[190,300]:[180,260,340],Y=one?[155,185]:[155,180,205],PY=60,NY=270,lx=X[X.length-1]+110,fx=lx+80,nm=one?'AB':'abc';
+  let b=wire(`M${X[0]} ${PY} H${fx}`)+wire(`M${X[0]} ${NY} H${fx}`)+wire(`M${lx} ${PY} V${NY}`)+wire(`M${fx} ${PY} V${NY}`),h='',g='';
+  X.forEach((x,k)=>{
+    b+=wire(`M${x} ${PY} V${NY}`)+wire(`M70 ${Y[k]} H${x}`)+`<circle class="dot" cx="${x}" cy="${Y[k]}" r="3.5"/><text class="sm" x="${x+8}" y="${Y[k]-5}">${nm[k]}</text>`;
+    h+=hot('u'+k,`M${x} ${Y[k]} V${PY}`)+hot('P'+k,`M${x} ${PY} H${lx}`)+hot('N'+k,`M${lx} ${NY} H${x}`)+hot('l'+k,`M${x} ${NY} V${Y[k]}`)+hot('in'+k,`M70 ${Y[k]} H${x}`);
+  });
+  h+=hot('load',`M${lx} ${PY} V${NY}`)+hot('fw',`M${lx} ${NY} H${fx} V${PY} H${lx}`);
+  b+=`<circle class="dot" cx="${lx}" cy="${PY}" r="3.5"/><circle class="dot" cx="${lx}" cy="${NY}" r="3.5"/><text class="sm" x="${X[0]-16}" y="${PY-8}">P (+)</text><text class="sm" x="${X[0]-16}" y="${NY+18}">N (−)</text>`;
+  if(one)b+=`<circle class="sym" cx="50" cy="170" r="16"/><text class="tx" x="50" y="176" text-anchor="middle">~</text>`+wire(`M66 170 H70 M70 ${Y[0]} V${Y[1]}`);
+  else Y.forEach((y,k)=>{b+=`<circle class="sym" cx="46" cy="${y}" r="10"/><text class="sm" x="46" y="${y+4}" text-anchor="middle">~</text><text class="sm" x="22" y="${y+4}" text-anchor="middle">${nm[k]}</text>`+wire(`M56 ${y} H70`)});
+  b+=`<rect class="sym" style="fill:var(--panel)" x="${lx-8}" y="88" width="16" height="30"/><text class="tx" x="${lx+14}" y="107">R</text>`;
+  if(S.load!=='R')b+=`<rect class="mk" x="${lx-8}" y="126" width="16" height="52"/><path class="sym" d="M${lx} 128 v4 a5 5 0 0 1 0 10 a5 5 0 0 1 0 10 a5 5 0 0 1 0 10 a5 5 0 0 1 0 10 v4"/><text class="tx" x="${lx+14}" y="157">L</text>`;
+  if(S.load==='RLE')b+=`<rect class="mk" x="${lx-12}" y="188" width="24" height="26"/><path class="sym" d="M${lx} 188 V196 M${lx-11} 196 H${lx+11} M${lx-6} 204 H${lx+6} M${lx} 204 V214"/><text class="tx" x="${lx+16}" y="205">E</text>`;
+  DEF[S.topo].forEach(([n,u,k])=>{const t=ty(n);g+=dev(`data-n="${n}"`,(t==='X'?'X':t)+n,`Device ${n}, ${u?'upper':'lower'}, ${NM[t]}. Press to change.`,t,X[k],u?108:232)});
+  g+=dev('data-fw','Df'+(S.fw?'':' off'),'Freewheeling diode across the load, '+(S.fw?'on':'off')+'. Press to toggle.',S.fw?'D':'X',fx,165);
+  ckt.setAttribute('viewBox',`0 0 ${fx+50} 300`);ckt.innerHTML=b+h+g;
+  lastKey=null;fwEl=ckt.querySelector('[data-fw]');
+  if(fn){const e=ckt.querySelector(fn==='fw'?'[data-fw]':`[data-n="${fn}"]`);e&&e.focus()}
+}
+function showFlow(idx){
+  const c=D.cd[idx],key=JSON.stringify(c);if(key===lastKey)return;lastKey=key;
+  const on=new Set(),rev=new Set();
+  if(c==='fw'){on.add('load');on.add('fw')}
+  else if(c){const[,,uk,lk]=c;['load','u'+uk,'P'+uk,'N'+lk,'l'+lk].forEach(x=>on.add(x));if(uk!==lk){on.add('in'+uk);on.add('in'+lk);rev.add('in'+lk)}}
+  ckt.querySelectorAll('[data-w]').forEach(e=>{e.classList.toggle('on',on.has(e.dataset.w));e.classList.toggle('rev',rev.has(e.dataset.w))});
+  ckt.querySelectorAll('.dev[data-n]').forEach(e=>e.classList.toggle('on',Array.isArray(c)&&(+e.dataset.n===c[0]||+e.dataset.n===c[1])));
+  fwEl&&fwEl.classList.toggle('on',c==='fw');
+}
+function cyc(g){
+  if(g.dataset.fw!==undefined){S.fw=!S.fw;$('fw').checked=S.fw}
+  else{const n=+g.dataset.n;S.types[n]={D:'T',T:'X',X:'D'}[ty(n)]}
+  devUI();ui();sim();
+}
+ckt.addEventListener('click',e=>{const g=e.target.closest('.dev');g&&cyc(g)});
+ckt.addEventListener('keydown',e=>{const g=e.target.closest('.dev');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();cyc(g)}});
+const cv=$('cv'),cx=cv.getContext('2d');
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function draw(frac){
+  if(!D)return;const dpr=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);
+  const ink=css('--ink'),mute=css('--mute'),grid=css('--grid');
+  const L=52,Rm=12,top=8,gap=22,ph=(h-top-gap*3-18)/3,x0=L,x1=w-Rm;
+  const px=k=>x0+(k/(N-1))*(x1-x0);
+  const idx=Math.min(N-1,Math.floor(frac*N));
+  const panels=[
+    {n:'Source (V)',s:S.topo==='1p'?[[D.vs,css('--src')]]:[[D.vs,'#B91C1C'],[D.vb,'#CA8A04'],[D.vc,'#1D4ED8']],lo:-Vm*1.1,hi:Vm*1.1},
+    {n:'Output voltage vo (V)',s:[[D.vo,css('--vo')]]},
+    {n:'Load current io (A)',s:[[D.io,css('--io')]]}];
+  panels.forEach((p,j)=>{
+    const all=p.s.flatMap(q=>q[0]);let lo=p.lo,hi=p.hi;
+    if(lo===undefined){lo=Math.min(0,Math.min(...all));hi=Math.max(1,Math.max(...all));const pad=(hi-lo)*.1;hi+=pad;if(lo<0)lo-=pad}
+    const y0=top+j*(ph+gap),Y=v=>y0+ph-((v-lo)/(hi-lo))*ph;
+    cx.font='12px Figtree,sans-serif';cx.fillStyle=mute;cx.textAlign='left';cx.fillText(p.n,x0,y0-6);
+    cx.strokeStyle=grid;cx.lineWidth=1;cx.strokeRect(x0,y0,x1-x0,ph);
+    for(let q=1;q<4;q++){const x=x0+q*(x1-x0)/4;cx.beginPath();cx.moveTo(x,y0);cx.lineTo(x,y0+ph);cx.stroke()}
+    cx.beginPath();cx.moveTo(x0,Y(0));cx.lineTo(x1,Y(0));cx.stroke();
+    cx.textAlign='right';cx.fillText(Math.round(hi),x0-6,y0+10);cx.fillText(Math.round(lo),x0-6,y0+ph);
+    p.s.forEach(([d,col])=>{cx.strokeStyle=col;cx.lineWidth=2;cx.beginPath();
+      for(let k=0;k<N;k+=3){const x=px(k),y=Y(d[k]);k?cx.lineTo(x,y):cx.moveTo(x,y)}cx.stroke()});
+    cx.fillStyle=ink;cx.beginPath();cx.arc(px(idx),Y(p.s[0][0][idx]),4,0,7);cx.fill();
+  });
+  cx.fillStyle=mute;cx.textAlign='center';
+  [0,90,180,270,360].forEach(a=>cx.fillText(a+'°',x0+a/360*(x1-x0),h-4));
+  cx.strokeStyle=ink;cx.lineWidth=1;cx.beginPath();cx.moveTo(px(idx),top);cx.lineTo(px(idx),h-18);cx.stroke();
+  showFlow(idx);$('status').innerHTML=`${D.lab[idx]} <span>· ωt ${Math.round(idx/N*360)}° · vo ${D.vo[idx].toFixed(0)} V · io ${D.io[idx].toFixed(2)} A</span>`;
+}
+function ui(){
+  document.querySelectorAll('.seg').forEach(g=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',S[g.dataset.k]===b.dataset.v)));
+  $('r-alpha').classList.toggle('off',!DEF[S.topo].some(d=>ty(d[0])==='T'));$('r-L').classList.toggle('off',S.load==='R');$('r-E').classList.toggle('off',S.load!=='RLE');
+  const u={alpha:'°',R:' Ω',L:' mH',E:' V'};
+  Object.keys(u).forEach(k=>$(k).parentElement.querySelector('output').textContent=S[k]+u[k]);
+}
+document.querySelectorAll('.seg').forEach(g=>g.onclick=e=>{const b=e.target.closest('button');if(b){S[g.dataset.k]=b.dataset.v;if(g.dataset.k==='topo')devUI();ui();sim()}});
+['alpha','R','L','E'].forEach(k=>$(k).oninput=e=>{S[k]=+e.target.value;ui();sim()});
+$('fw').onchange=e=>{S.fw=e.target.checked;sim()};
+const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function theory(){
+  const one=S.topo==='1p',ds=DEF[S.topo],t=ds.map(d=>ty(d[0]));
+  if(t.includes('X'))return null;
+  const a=S.alpha*PI/180,E=S.load==='RLE'?S.E:0,Vml=Vm*Math.sqrt(3),n=ds.length;
+  const nT=t.filter(x=>x==='T').length,up=ds.filter((d,j)=>t[j]==='T'&&d[1]).length,lw=nT-up;
+  if(nT===0)return E===0?(one?2*Vm/PI:3*Vml/PI):null;
+  if(nT===n){
+    if(!S.fw&&!D.m.disc)return one?2*Vm/PI*Math.cos(a):3*Vml/PI*Math.cos(a);
+    if((S.load==='R'||S.fw)&&E===0)return one?Vm/PI*(1+Math.cos(a)):(S.alpha<=60?3*Vml/PI*Math.cos(a):3*Vml/PI*(1+Math.cos(a+PI/3)));
+    return null;
+  }
+  if(nT===n/2&&(up===nT||lw===nT)&&E===0)return one?Vm/PI*(1+Math.cos(a)):3*Vml/(2*PI)*(1+Math.cos(a));
+  return null;
+}
+function tab(t){
+  $('lab').hidden=t!=='lab';$('theory').hidden=t!=='theory';
+  $('t-lab').setAttribute('aria-pressed',t==='lab');$('t-th').setAttribute('aria-pressed',t==='theory');scrollTo(0,0);
+}
+function applyCfg(c){
+  const d={topo:'1p',dev:'T',load:'RL',alpha:30,R:10,L:100,E:0,fw:false,...c};
+  Object.assign(S,{topo:d.topo,load:d.load,alpha:d.alpha,R:d.R,L:d.L,E:d.E,fw:d.fw});
+  for(let n=1;n<=6;n++)S.types[n]=d.dev==='H'?(n%2?'T':'D'):d.dev;
+  ['alpha','R','L','E'].forEach(k=>$(k).value=S[k]);$('fw').checked=S.fw;
+  devUI();ui();sim();tab('lab');
+}
+$('t-lab').onclick=()=>tab('lab');$('t-th').onclick=()=>tab('theory');
+document.querySelectorAll('.try').forEach(b=>b.onclick=()=>applyCfg(JSON.parse(b.dataset.cfg)));
+devUI();ui();sim();
+(function loop(t){if(!$('lab').hidden)draw(still?.25:(t%6000)/6000);requestAnimationFrame(loop)})(0);
+</script></body></html>
